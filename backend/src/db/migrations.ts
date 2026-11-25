@@ -52,7 +52,10 @@ const STATEMENTS: readonly string[] = [
     max_booking_days_ahead INTEGER,
     buffer_minutes INTEGER NOT NULL DEFAULT 0,
     is_approved INTEGER NOT NULL DEFAULT 0,
+    suspended_at INTEGER,
+    suspension_reason TEXT,
     bookings_paused INTEGER NOT NULL DEFAULT 0,
+    intake_answers TEXT NOT NULL DEFAULT '[]',
     verified_session_count INTEGER NOT NULL DEFAULT 0,
     provider_cancellation_count INTEGER NOT NULL DEFAULT 0,
     created_at INTEGER NOT NULL
@@ -94,6 +97,9 @@ const STATEMENTS: readonly string[] = [
     escrow_deploy_tx_hash TEXT,
     escrow_fund_tx_hash TEXT,
     deploy_submitted_at INTEGER,
+    note TEXT,
+    verified_session_counted_at INTEGER,
+    provider_cancellation_counted_at INTEGER,
     created_at INTEGER NOT NULL
   )`,
   `CREATE TABLE IF NOT EXISTS reviews (
@@ -183,6 +189,12 @@ const STATEMENTS: readonly string[] = [
     note TEXT,
     evidence_hash TEXT,
     opened_at INTEGER NOT NULL
+  )`,
+  `CREATE TABLE IF NOT EXISTS escrow_contract_deployments (
+    booking_id TEXT NOT NULL,
+    contract_id TEXT NOT NULL,
+    deployed_at INTEGER NOT NULL,
+    PRIMARY KEY (booking_id, contract_id)
   )`,
   `CREATE TABLE IF NOT EXISTS saved_shops (
     id TEXT PRIMARY KEY,
@@ -482,5 +494,14 @@ export function runMigrations(sqlite: Database): void {
   // another slot is offered. Default 0 keeps adjacent slots (existing rows).
   if (!hasColumn(sqlite, "provider_profiles", "buffer_minutes")) {
     sqlite.exec(`ALTER TABLE provider_profiles ADD COLUMN buffer_minutes INTEGER NOT NULL DEFAULT 0`);
+  }
+  if (!hasColumn(sqlite, "bookings", "verified_session_counted_at")) {
+    sqlite.exec(`ALTER TABLE bookings ADD COLUMN verified_session_counted_at INTEGER`);
+  }
+  if (!hasColumn(sqlite, "bookings", "provider_cancellation_counted_at")) {
+    sqlite.exec(`ALTER TABLE bookings ADD COLUMN provider_cancellation_counted_at INTEGER`);
+  }
+  if (!hasColumn(sqlite, "bookings", "note")) {
+    sqlite.exec(`ALTER TABLE bookings ADD COLUMN note TEXT`);
   }
 }
