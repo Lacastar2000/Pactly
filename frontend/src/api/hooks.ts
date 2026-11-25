@@ -781,6 +781,9 @@ export function useSavedShops(session: Session | undefined) {
     enabled: Boolean(session),
     retry: false,
   });
+}
+
+// ---------------------------------------------------------------------------
 // Shop reports: clients report a shop to admins.
 // ---------------------------------------------------------------------------
 
